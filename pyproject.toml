@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wechat-codex-bridge"
+version = "0.1.0"
+description = "Connect a Docker WeChat robot to the current host Codex login"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+license = "MIT"
+authors = [{name = "stanleyhuangbs"}]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+]
+
+[project.scripts]
+wechat-codex-bridge = "wechat_codex_bridge.http:main"
+wechat-codex-bridge-admin = "wechat_codex_bridge.docker_admin:main"
+
+[tool.setuptools]
+packages = ["wechat_codex_bridge"]
+
+[tool.setuptools.package-dir]
+wechat_codex_bridge = "src/wechat_codex_bridge"
