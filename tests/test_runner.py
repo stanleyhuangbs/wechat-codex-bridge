@@ -45,7 +45,7 @@ elif "resume" in sys.argv and mode == "missing-on-resume":
 else:
     if "resume" not in sys.argv:
         print(json.dumps({{"type": "thread.started", "thread_id": "thread-new"}}))
-    print(json.dumps({{"type": "agent_message", "message": "Codex 当前账号回复"}}, ensure_ascii=False))
+    print(json.dumps({{"type": "agent_message", "message": "Codex 当前账号回复"}}))
     print(json.dumps({{"type": "turn.completed"}}))
 '''
         python_script.write_text(source, encoding="utf-8")
@@ -115,8 +115,11 @@ else:
                 reply = runner.run("scope", [{"role": "user", "content": "中文问题"}])
 
         self.assertEqual(reply.text, "中文回复")
-        self.assertEqual(invoked.call_args.kwargs["encoding"], "utf-8")
-        self.assertEqual(invoked.call_args.kwargs["errors"], "strict")
+        transport_call = next(
+            call for call in invoked.call_args_list if "input" in call.kwargs
+        )
+        self.assertEqual(transport_call.kwargs["encoding"], "utf-8")
+        self.assertEqual(transport_call.kwargs["errors"], "strict")
 
     def test_fresh_then_resume_uses_current_home_and_read_only_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
