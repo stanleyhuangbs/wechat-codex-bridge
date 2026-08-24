@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
-import tempfile
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
+
+from .platform import write_private_text
 
 
 class SessionCatalogError(RuntimeError):
@@ -175,8 +175,6 @@ class SessionCatalog:
         self._entries = {entry.key: entry for entry in ordered}
 
     def _persist(self) -> None:
-        self.path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-        os.chmod(self.path.parent, 0o700)
         payload = (
             json.dumps(
                 [asdict(entry) for entry in self._entries.values()],
@@ -188,27 +186,7 @@ class SessionCatalog:
         )
         if len(payload.encode("utf-8")) > self.max_bytes:
             raise SessionCatalogError("session_catalog_too_large")
-        descriptor, temporary = tempfile.mkstemp(
-            prefix=f".{self.path.name}.", dir=self.path.parent
-        )
         try:
-            os.fchmod(descriptor, 0o600)
-            with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-                descriptor = -1
-                handle.write(payload)
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.replace(temporary, self.path)
-            os.chmod(self.path, 0o600)
-            directory_fd = os.open(self.path.parent, os.O_RDONLY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
-        finally:
-            if descriptor >= 0:
-                os.close(descriptor)
-            try:
-                os.unlink(temporary)
-            except FileNotFoundError:
-                pass
+            write_private_text(self.path, payload)
+        except OSError as exc:
+            raise SessionCatalogError("session_catalog_write_failed") from exc

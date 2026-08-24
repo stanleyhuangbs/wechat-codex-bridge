@@ -66,13 +66,19 @@ def _apply_windows_acl(path: Path) -> None:
         raise PlatformError("private_acl_failed")
 
 
+def restrict_private_path(path: Path | str, *, directory: bool = False) -> None:
+    """Apply the current platform's current-user-only policy to an existing path."""
+    target = Path(path)
+    if private_file_policy().kind == "windows-acl":
+        _apply_windows_acl(target)
+    else:
+        os.chmod(target, 0o700 if directory else 0o600)
+
+
 def ensure_private_directory(path: Path | str) -> Path:
     directory = Path(path)
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-    if private_file_policy().kind == "windows-acl":
-        _apply_windows_acl(directory)
-    else:
-        os.chmod(directory, 0o700)
+    restrict_private_path(directory, directory=True)
     return directory
 
 
@@ -93,10 +99,10 @@ def write_private_text(path: Path | str, text: str) -> None:
             handle.flush()
             os.fsync(handle.fileno())
         if private_file_policy().kind == "windows-acl":
-            _apply_windows_acl(temporary)
+            restrict_private_path(temporary)
         os.replace(temporary, destination)
         if private_file_policy().kind == "windows-acl":
-            _apply_windows_acl(destination)
+            restrict_private_path(destination)
         else:
             os.chmod(destination, 0o600)
             try:
