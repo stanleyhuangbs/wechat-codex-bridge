@@ -131,6 +131,22 @@ else:
             for path in record["image_paths"]:
                 self.assertFalse(Path(path).exists())
 
+    def test_default_runner_accepts_six_video_frames(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            executable, capture = self._fake_codex(root)
+            runner = self._runner(root, executable)
+            frame = "data:image/png;base64," + base64.b64encode(b"\x89PNG\r\n\x1a\nframe").decode()
+
+            runner.run(
+                "video-scope",
+                [{"role": "user", "content": "理解视频"}],
+                images=[frame] * 6,
+            )
+            record = json.loads(capture.read_text(encoding="utf-8").splitlines()[0])
+
+        self.assertEqual(len(record["image_paths"]), 6)
+
     def test_prompt_and_image_limits_fail_closed(self):
         from wechat_codex_bridge.runner import CodexRunnerError
 

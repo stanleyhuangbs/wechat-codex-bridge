@@ -56,7 +56,7 @@ class CurrentUserCodexRunner:
         environment: Mapping[str, str] | None = None,
         timeout: float = 120.0,
         max_prompt_bytes: int = 48 * 1024,
-        max_images: int = 4,
+        max_images: int = 8,
         max_image_bytes: int = 10 * 1024 * 1024,
     ):
         try:
