@@ -98,6 +98,8 @@ class WhisperCliTranscriber:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.PIPE,
                     text=True,
+                    encoding="utf-8",
+                    errors="replace",
                     env=self.environment,
                     timeout=self.timeout,
                     check=False,

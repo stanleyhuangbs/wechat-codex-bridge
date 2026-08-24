@@ -136,6 +136,8 @@ class CurrentUserCodexRunner:
                 self.command(thread_id=thread_id, image_paths=image_paths),
                 input=prompt,
                 text=True,
+                encoding="utf-8",
+                errors="strict",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=self.environment,

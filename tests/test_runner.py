@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 class CurrentUserCodexRunnerTests(unittest.TestCase):
@@ -92,6 +93,30 @@ else:
         self.assertEqual(fresh[1:3], ["exec", "--json"])
         self.assertIn("resume", resumed)
         self.assertNotIn("--ephemeral", fresh + resumed)
+
+    def test_subprocess_transport_is_explicit_utf8(self):
+        from subprocess import CompletedProcess
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            executable, _ = self._fake_codex(root)
+            runner = self._runner(root, executable)
+            output = "\n".join(
+                (
+                    json.dumps({"type": "thread.started", "thread_id": "thread-new"}),
+                    json.dumps({"type": "agent_message", "message": "中文回复"}, ensure_ascii=False),
+                    json.dumps({"type": "turn.completed"}),
+                )
+            )
+            with patch(
+                "wechat_codex_bridge.runner.subprocess.run",
+                return_value=CompletedProcess([], 0, output, ""),
+            ) as invoked:
+                reply = runner.run("scope", [{"role": "user", "content": "中文问题"}])
+
+        self.assertEqual(reply.text, "中文回复")
+        self.assertEqual(invoked.call_args.kwargs["encoding"], "utf-8")
+        self.assertEqual(invoked.call_args.kwargs["errors"], "strict")
 
     def test_fresh_then_resume_uses_current_home_and_read_only_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
