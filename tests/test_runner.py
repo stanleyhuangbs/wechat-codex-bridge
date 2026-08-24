@@ -61,8 +61,8 @@ else:
             workspace=workspace,
             state_dir=state,
             environment={
-                "HOME": "/Users/tester",
-                "CODEX_HOME": "/Users/tester/.codex",
+                "HOME": "/private-test-home",
+                "CODEX_HOME": "/private-test-home/.codex",
                 "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
                 "LANG": "C.UTF-8",
                 "WECHAT_CODEX_BRIDGE_TOKEN": "must-not-reach-codex",
@@ -97,8 +97,8 @@ else:
         self.assertEqual(first.text, "Codex 当前账号回复")
         self.assertFalse(first.resumed)
         self.assertTrue(second.resumed)
-        self.assertEqual(records[0]["home"], "/Users/tester")
-        self.assertEqual(records[0]["codex_home"], "/Users/tester/.codex")
+        self.assertEqual(records[0]["home"], "/private-test-home")
+        self.assertEqual(records[0]["codex_home"], "/private-test-home/.codex")
         self.assertIsNone(records[0]["bridge_secret"])
         self.assertIn("read-only", records[0]["argv"])
         self.assertNotIn("第一问", records[0]["argv"])
