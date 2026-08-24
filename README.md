@@ -1,9 +1,28 @@
 # WeChat Codex Bridge
 
-Connect a locally installed Docker WeChat robot to the Codex CLI account already signed in on the host. The Bridge runs on the host, keeps conversation scopes separate, and exposes a Bearer-authenticated OpenAI-compatible endpoint to the robot.
+把本机 Docker 微信机器人连接到宿主机当前已经登录的 Codex CLI 账号。Bridge 在宿主机以当前用户运行，按匿名微信会话持续恢复 Codex thread，并向机器人提供带 Bearer 鉴权的 OpenAI-compatible 接口。
 
-This is an independent companion to [`wechat-robot-client-local`](https://github.com/stanleyhuangbs/wechat-robot-client-local), not a replacement for the WeChat robot. The robot continues to handle WeChat login, messages, images, voice, video, files, and replies. This Bridge adds current-user Codex chat, bounded image/video-frame understanding, and optional local Whisper transcription through the same private token.
+## 三个独立项目
 
-Users who additionally need private attachment archiving, document extraction, CLI, or MCP handoff can install the separate optional [`wechat-agent-bridge`](https://github.com/stanleyhuangbs/wechat-agent-bridge).
+- [`stanleyhuangbs/wechat-robot-client-local`](https://github.com/stanleyhuangbs/wechat-robot-client-local)：真正的微信机器人，负责微信登录、收发消息、下载图片/语音/视频/文件以及回发。
+- 本仓库 `wechat-codex-bridge`：让该机器人使用当前系统登录的 Codex，支持持续对话、图片与视频帧、可选本地 Whisper 语音转写。
+- 可选的 [`stanleyhuangbs/wechat-agent-bridge`](https://github.com/stanleyhuangbs/wechat-agent-bridge)：用于私有附件归档、文档提取、CLI/MCP 转交。`wechat-agent-bridge` 不是必装，也不是微信机器人本体。
 
-Platform installers and verified macOS, Windows, and Linux instructions are being finalized before the first public release.
+只安装微信机器人时，原有图片、语音、视频、文件收发能力仍然存在；只有需要“微信直接使用当前 Codex 登录”时才安装本 Bridge。
+
+## 安全默认值
+
+- 不读取、复制或打包 Codex 的认证文件，只让 Codex CLI 在当前用户环境中自行使用已有登录。
+- Codex 运行在 read-only sandbox，禁用 Shell、浏览器、插件和外部操作工具。
+- macOS/Windows 只绑定 loopback；Linux 只绑定已验证的目标 Docker 私网 gateway，拒绝 `0.0.0.0`。
+- token、会话目录和备份仅当前用户可读；安装、升级、卸载不删除状态与旧 release。
+
+## 支持状态
+
+| 系统 | 当前证据 |
+|---|---|
+| macOS | WeChat-verified（文字持续会话）；Docker-verified（大图、6 视频帧）；本地语音转写已验证 |
+| Windows | Contract-tested；原生安装与当前账号验证见 [验证记录](docs/verification.md) |
+| Linux | Contract-tested；Docker gateway 合同已验证，实机等级见 [验证记录](docs/verification.md) |
+
+安装前先阅读 [安装说明](docs/installation.md)、[安全边界](SECURITY.md) 和 [回滚说明](docs/rollback.md)。架构细节见 [architecture](docs/architecture.md)。
