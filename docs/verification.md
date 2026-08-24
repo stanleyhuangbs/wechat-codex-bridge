@@ -16,13 +16,13 @@ CI 不等于真实 Codex 登录，也不等于 Docker 或手机端微信验收�
 | 系统 | 等级 | 说明 |
 |---|---|---|
 | macOS | WeChat-verified | 文字两轮持续会话在手机端可见；Docker 大于旧 128KB 的图片和 6 视频帧请求均返回 200；同 token Whisper 合成语音返回 200 |
-| Windows | Contract-tested | Python 单元合同与 PowerShell 当前用户 ACL/计划任务资产已加入；本轮没有可达的已批准 Windows 主机，原生 Codex 登录、Docker 和微信仍需现场验证 |
-| Linux | Contract-tested | Python 3.11 wheel、systemd user 和私网 gateway 合同已加入；本机 Docker Desktop 无法启动任何新建的 Linux 测试容器，已回收专用容器/网络，因此没有把该次尝试记为 Docker-verified |
+| Windows | Contract-tested | GitHub Windows runner 已完成单元测试、编译、wheel 构建、干净安装、两个 CLI 冒烟、公共包扫描和 PowerShell 安装器解析；原生 Codex 登录、Docker 和微信仍需现场验证 |
+| Linux | Contract-tested | GitHub Ubuntu runner 已完成单元测试、编译、wheel 构建、干净安装、两个 CLI 冒烟和公共包扫描；systemd user 与私网 gateway 合同已验证，真实宿主 Codex/Docker/微信仍需现场验证 |
 
 ### 环境记录（不含身份与网络信息）
 
 - macOS：2026-08-24，arm64，Codex CLI 0.144.1，ChatGPT 登录可用，Docker 可用，最高 WeChat-verified。
-- Windows：2026-08-24，当前无可达测试主机；版本、架构、Codex 登录和 Docker 均未验证，最高 Contract-tested。
-- Linux：2026-08-24，计划使用 Python 3.11 arm64 官方容器；镜像存在但 Docker 后端把最小新容器停在 Created，未得到运行时版本或请求证据，最高 Contract-tested。
+- Windows：2026-08-24，GitHub `windows-latest` + Python 3.11 托管验证通过；没有用户批准的真实账号主机，Codex 登录、Docker 和微信均未验证，最高 Contract-tested。
+- Linux：2026-08-24，GitHub `ubuntu-latest` + Python 3.11 托管验证通过；此前本机 Docker Desktop 把最小新容器停在 Created，未取得真实宿主 Codex、Docker Bridge 请求或微信证据，最高 Contract-tested。
 
-首发前会继续提升 Windows/Linux 能取得的证据等级；无法取得时保持当前标记，不用 CI 代替。
+三平台托管验证记录：[GitHub Actions run 32717601111](https://github.com/stanleyhuangbs/wechat-codex-bridge/actions/runs/32717601111)。后续只有取得真实账号与微信端到端证据才提升 Windows/Linux 等级，不用 CI 代替运行时验收。

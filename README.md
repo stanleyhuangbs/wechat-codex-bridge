@@ -22,7 +22,7 @@
 | 系统 | 当前证据 |
 |---|---|
 | macOS | WeChat-verified（文字持续会话）；Docker-verified（大图、6 视频帧）；本地语音转写已验证 |
-| Windows | Contract-tested；本轮没有可达 Windows 主机，缺口见 [验证记录](docs/verification.md) |
-| Linux | Contract-tested；Docker gateway 合同已验证，新 Linux 容器启动被本机 Docker 后端阻塞，见 [验证记录](docs/verification.md) |
+| Windows | Contract-tested；GitHub Windows runner 已完成测试、构建、干净安装、CLI 冒烟和 PowerShell 解析；真实 Codex 登录、Docker 与微信仍待现场验证 |
+| Linux | Contract-tested；GitHub Ubuntu runner 已完成测试、构建、干净安装和 CLI 冒烟，Docker gateway 合同已验证；真实宿主 Codex/Docker/微信仍待现场验证 |
 
 安装前先阅读 [安装说明](docs/installation.md)、[安全边界](SECURITY.md) 和 [回滚说明](docs/rollback.md)。架构细节见 [architecture](docs/architecture.md)。

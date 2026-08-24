@@ -25,6 +25,9 @@ class PublicDocsTests(unittest.TestCase):
         for label in ("Contract-tested", "Host-verified", "Docker-verified", "WeChat-verified"):
             self.assertIn(label, text)
         self.assertIn("CI 不等于真实 Codex 登录", text)
+        self.assertIn("32717601111", text)
+        self.assertIn("最高 Contract-tested", text)
+        self.assertNotIn("首发前", text)
 
     def test_relative_markdown_links_resolve(self):
         missing = []
