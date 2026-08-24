@@ -33,7 +33,7 @@ output_dir = Path(sys.argv[sys.argv.index('--output_dir') + 1])
             )
             text = transcriber.transcribe(
                 base64.b64encode(b"audio-content").decode(),
-                filename="voice.wav",
+                filename="voice.aiff",
                 language="zh",
             )
 

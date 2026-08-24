@@ -19,7 +19,9 @@ class TranscriptionError(RuntimeError):
     """A stable, non-sensitive transcription failure."""
 
 
-_AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".aac", ".ogg", ".opus", ".amr", ".silk"}
+_AUDIO_EXTENSIONS = {
+    ".wav", ".aiff", ".aif", ".mp3", ".m4a", ".aac", ".ogg", ".opus", ".amr", ".silk",
+}
 _LANGUAGE = re.compile(r"^[A-Za-z-]{2,16}$")
 _SAFE_ENV_KEYS = {
     "HOME", "PATH", "LANG", "LC_ALL", "TMPDIR", "TMP", "TEMP", "USERPROFILE",
