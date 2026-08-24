@@ -1,0 +1,11 @@
+[Unit]
+Description=WeChat Codex Bridge
+
+[Service]
+ExecStart=__PROGRAM__ --bind __BIND_HOST__ --port 18791 --token-path __TOKEN__ --state-dir __STATE__ --workspace __WORKSPACE__ --codex __CODEX__
+WorkingDirectory=__WORKSPACE__
+Restart=on-failure
+Environment=HOME=__HOME__
+
+[Install]
+WantedBy=default.target

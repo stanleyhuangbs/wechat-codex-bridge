@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>ai.wechat-codex-bridge</string>
+<key>ProgramArguments</key><array>
+<string>__PROGRAM__</string><string>--bind</string><string>127.0.0.1</string>
+<string>--port</string><string>18791</string><string>--token-path</string><string>__TOKEN__</string>
+<string>--state-dir</string><string>__STATE__</string><string>--workspace</string><string>__WORKSPACE__</string>
+<string>--codex</string><string>__CODEX__</string>
+</array>
+<key>EnvironmentVariables</key><dict><key>HOME</key><string>__HOME__</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+<key>WorkingDirectory</key><string>__WORKSPACE__</string><key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+<key>StandardOutPath</key><string>__STDOUT__</string><key>StandardErrorPath</key><string>__STDERR__</string>
+</dict></plist>
