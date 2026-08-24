@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import stat
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -41,6 +42,7 @@ class PlatformContractTests(unittest.TestCase):
 
         self.assertEqual(private_file_policy().kind, "windows-acl")
 
+    @unittest.skipIf(os.name == "nt", "POSIX mode bits do not represent Windows ACLs")
     def test_private_text_is_atomic_and_owner_only_on_posix(self):
         from wechat_codex_bridge.platform import write_private_text
 

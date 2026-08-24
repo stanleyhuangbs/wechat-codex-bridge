@@ -24,9 +24,10 @@ jobs:
       - run: python -m pip wheel --no-deps --no-build-isolation --wheel-dir dist .
       - name: Clean install and CLI smoke
         run: >-
-          python -c "import pathlib,subprocess,sys,venv;
-          venv.EnvBuilder(with_pip=True).create('clean-venv');
-          scripts=pathlib.Path('clean-venv')/('Scripts' if sys.platform=='win32' else 'bin');
+          python -c "import pathlib,subprocess,sys,tempfile,venv;
+          clean=pathlib.Path(tempfile.mkdtemp(prefix='wechat-codex-ci-'));
+          venv.EnvBuilder(with_pip=True).create(clean);
+          scripts=clean/('Scripts' if sys.platform=='win32' else 'bin');
           wheel=next(pathlib.Path('dist').glob('*.whl'));
           subprocess.run([str(scripts/('python.exe' if sys.platform=='win32' else 'python')),'-m','pip','install','--no-deps',str(wheel)],check=True);
           subprocess.run([str(scripts/('wechat-codex-bridge.exe' if sys.platform=='win32' else 'wechat-codex-bridge')),'--help'],check=True);

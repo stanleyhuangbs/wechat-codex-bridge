@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import base64
+import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,8 +10,8 @@ from pathlib import Path
 
 class WhisperTranscriberTests(unittest.TestCase):
     def _fake_whisper(self, root: Path) -> Path:
-        script = root / "fake-whisper"
-        script.write_text(
+        python_script = root / "fake-whisper.py"
+        python_script.write_text(
             """#!/usr/bin/env python3
 from pathlib import Path
 import sys
@@ -19,7 +21,18 @@ output_dir = Path(sys.argv[sys.argv.index('--output_dir') + 1])
 """,
             encoding="utf-8",
         )
-        script.chmod(0o700)
+        if os.name == "nt":
+            script = root / "fake-whisper.cmd"
+            script.write_text(
+                f'@"{sys.executable}" "{python_script}" %*\n', encoding="utf-8"
+            )
+        else:
+            script = root / "fake-whisper"
+            script.write_text(
+                f"#!{sys.executable}\n" + python_script.read_text(encoding="utf-8").split("\n", 1)[1],
+                encoding="utf-8",
+            )
+            script.chmod(0o700)
         return script
 
     def test_transcribes_with_private_temporary_file_and_cleans_up(self):

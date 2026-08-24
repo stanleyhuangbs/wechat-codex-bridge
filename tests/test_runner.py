@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,7 +12,7 @@ from pathlib import Path
 class CurrentUserCodexRunnerTests(unittest.TestCase):
     def _fake_codex(self, root: Path, *, mode: str = "ok") -> tuple[Path, Path]:
         capture = root / "capture.jsonl"
-        script = root / "fake-codex"
+        python_script = root / "fake-codex.py"
         source = f'''#!/usr/bin/env python3
 import json
 import os
@@ -46,8 +47,16 @@ else:
     print(json.dumps({{"type": "agent_message", "message": "Codex 当前账号回复"}}, ensure_ascii=False))
     print(json.dumps({{"type": "turn.completed"}}))
 '''
-        script.write_text(source, encoding="utf-8")
-        script.chmod(0o700)
+        python_script.write_text(source, encoding="utf-8")
+        if os.name == "nt":
+            script = root / "fake-codex.cmd"
+            script.write_text(
+                f'@"{sys.executable}" "{python_script}" %*\n', encoding="utf-8"
+            )
+        else:
+            script = root / "fake-codex"
+            script.write_text(f"#!{sys.executable}\n" + source.split("\n", 1)[1], encoding="utf-8")
+            script.chmod(0o700)
         return script, capture
 
     def _runner(self, root: Path, executable: Path, **kwargs):

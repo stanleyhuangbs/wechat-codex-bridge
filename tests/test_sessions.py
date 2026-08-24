@@ -31,7 +31,8 @@ class CodexSessionCatalogTests(unittest.TestCase):
         self.assertIsNotNone(entry)
         self.assertEqual(entry.thread_id, "thread-1")
         self.assertNotIn("wechat-private-scope", raw)
-        self.assertEqual(mode, 0o600)
+        if os.name != "nt":
+            self.assertEqual(mode, 0o600)
 
     def test_scope_workspace_and_policy_must_all_match(self):
         from wechat_codex_bridge.sessions import SessionCatalog, SessionIdentity
