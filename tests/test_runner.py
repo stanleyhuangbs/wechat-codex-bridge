@@ -121,6 +121,7 @@ else:
         self.assertEqual(transport_call.kwargs["encoding"], "utf-8")
         self.assertEqual(transport_call.kwargs["errors"], "strict")
 
+    @unittest.skipIf(os.name == "nt", "POSIX fake Codex process fixture")
     def test_fresh_then_resume_uses_current_home_and_read_only_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -143,6 +144,7 @@ else:
         self.assertIn("resume", records[1]["argv"])
         self.assertIn("thread-new", records[1]["argv"])
 
+    @unittest.skipIf(os.name == "nt", "POSIX fake Codex process fixture")
     def test_different_scopes_create_independent_threads(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -155,6 +157,7 @@ else:
         self.assertNotIn("resume", records[0]["argv"])
         self.assertNotIn("resume", records[1]["argv"])
 
+    @unittest.skipIf(os.name == "nt", "POSIX fake Codex process fixture")
     def test_data_url_image_is_private_during_run_and_removed_afterward(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -168,6 +171,7 @@ else:
             for path in record["image_paths"]:
                 self.assertFalse(Path(path).exists())
 
+    @unittest.skipIf(os.name == "nt", "POSIX fake Codex process fixture")
     def test_default_runner_accepts_six_video_frames(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -196,6 +200,7 @@ else:
             with self.assertRaisesRegex(CodexRunnerError, "codex_images_invalid"):
                 runner.run("scope", [{"role": "user", "content": "x"}], images=["x"])
 
+    @unittest.skipIf(os.name == "nt", "POSIX fake Codex process fixture")
     def test_timeout_and_backend_failure_do_not_expose_details(self):
         from wechat_codex_bridge.runner import CodexRunnerError
 
@@ -209,6 +214,7 @@ else:
                 self.assertEqual(str(raised.exception), code)
                 self.assertNotIn("private", str(raised.exception))
 
+    @unittest.skipIf(os.name == "nt", "POSIX fake Codex process fixture")
     def test_missing_resumed_thread_is_archived_and_retried_once_fresh(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
