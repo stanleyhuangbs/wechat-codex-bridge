@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+include SECURITY.md
+include pyproject.toml
+include .github/workflows/test.yml
+recursive-include deploy *
+recursive-include docs *.md
+recursive-include tools *.py
+recursive-include tests test_*.py
+global-exclude __pycache__ *.py[cod] *.log token sessions.json

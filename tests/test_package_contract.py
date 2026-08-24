@@ -32,6 +32,12 @@ class PackageContractTests(unittest.TestCase):
 
         self.assertEqual(names, {"wechat_codex_bridge"})
 
+    def test_sdist_manifest_includes_public_installers_and_docs(self):
+        manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+
+        for entry in ("include SECURITY.md", "recursive-include deploy", "recursive-include docs"):
+            self.assertIn(entry, manifest)
+
 
 if __name__ == "__main__":
     unittest.main()
