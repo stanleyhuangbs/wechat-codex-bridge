@@ -23,6 +23,7 @@ _MAX_BODY_BYTES = 80 * 1024 * 1024
 _MAX_MESSAGES = 32
 _MAX_TEXT_BYTES = 48 * 1024
 _MAX_IMAGES = 8
+_DEFAULT_QUEUE_TIMEOUT_SECONDS = 120.0
 _SCOPE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,256}$")
 
 
@@ -30,27 +31,42 @@ class BridgeHttpServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = False
 
-    def __init__(self, address, handler, *, token, runner, transcriber, max_concurrency):
+    def __init__(
+        self, address, handler, *, token, runner, transcriber, max_concurrency,
+        queue_timeout,
+    ):
         self.token = token
         self.runner = runner
         self.transcriber = transcriber
         self.pool = threading.BoundedSemaphore(max(1, min(int(max_concurrency), 16)))
         self.active_scopes: set[str] = set()
-        self.active_scopes_lock = threading.Lock()
+        self.active_scopes_condition = threading.Condition()
+        self.queue_timeout = max(0.1, min(float(queue_timeout), _DEFAULT_QUEUE_TIMEOUT_SECONDS))
         super().__init__(address, handler)
 
     def reserve_scope(self, scope: str) -> bool:
-        with self.active_scopes_lock:
-            if scope in self.active_scopes or not self.pool.acquire(blocking=False):
-                return False
+        deadline = time.monotonic() + self.queue_timeout
+        with self.active_scopes_condition:
+            while scope in self.active_scopes:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return False
+                self.active_scopes_condition.wait(remaining)
             self.active_scopes.add(scope)
+        remaining = deadline - time.monotonic()
+        if remaining > 0 and self.pool.acquire(timeout=remaining):
             return True
+        with self.active_scopes_condition:
+            self.active_scopes.remove(scope)
+            self.active_scopes_condition.notify_all()
+        return False
 
     def release_scope(self, scope: str) -> None:
-        with self.active_scopes_lock:
+        with self.active_scopes_condition:
             if scope in self.active_scopes:
                 self.active_scopes.remove(scope)
                 self.pool.release()
+                self.active_scopes_condition.notify_all()
 
 
 class CodexHttpHandler(BaseHTTPRequestHandler):
@@ -267,7 +283,9 @@ class CodexHttpHandler(BaseHTTPRequestHandler):
 
 def create_server(
     host: str, port: int, *, token: str, runner, transcriber=None,
-    max_concurrency: int = 2, local_addresses: set[str] | None = None,
+    max_concurrency: int = 2,
+    queue_timeout: float = _DEFAULT_QUEUE_TIMEOUT_SECONDS,
+    local_addresses: set[str] | None = None,
 ) -> BridgeHttpServer:
     known_local = {"127.0.0.1", "::1"} if local_addresses is None else local_addresses
     if not is_safe_bind_host(host, local_addresses=known_local):
@@ -277,6 +295,7 @@ def create_server(
     return BridgeHttpServer(
         (host, int(port)), CodexHttpHandler, token=token, runner=runner,
         transcriber=transcriber, max_concurrency=max_concurrency,
+        queue_timeout=queue_timeout,
     )
 
 
@@ -314,6 +333,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--whisper-model", default="small")
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--max-concurrency", type=int, default=2)
+    parser.add_argument("--queue-timeout", type=float, default=_DEFAULT_QUEUE_TIMEOUT_SECONDS)
     args = parser.parse_args(argv)
     runner = CurrentUserCodexRunner(
         executable=discover_codex(args.codex), workspace=args.workspace,
@@ -331,6 +351,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     with create_server(
         args.bind, args.port, token=_private_token(args.token_path), runner=runner,
         transcriber=transcriber, max_concurrency=args.max_concurrency,
+        queue_timeout=args.queue_timeout,
         local_addresses=_known_local_addresses(),
     ) as server:
         server.serve_forever(poll_interval=0.5)

@@ -26,3 +26,9 @@ CI 不等于真实 Codex 登录，也不等于 Docker 或手机端微信验收�
 - Linux：2026-08-24，GitHub `ubuntu-latest` + Python 3.11 托管验证通过；此前本机 Docker Desktop 把最小新容器停在 Created，未取得真实宿主 Codex、Docker Bridge 请求或微信证据，最高 Contract-tested。
 
 三平台托管验证记录：[GitHub Actions run 32717601111](https://github.com/stanleyhuangbs/wechat-codex-bridge/actions/runs/32717601111)。后续只有取得真实账号与微信端到端证据才提升 Windows/Linux 等级，不用 CI 代替运行时验收。
+
+## 0.1.2 并发回归
+
+- 同一 scope 的第二个请求会等待第一个请求释放会话，不再立即返回 409。
+- 等待时间默认且最高为 120 秒，超时后仍使用稳定的 `scope_busy` 错误码。
+- 本地全量测试 55/55 通过；三平台托管验证以本次发布对应的 GitHub Actions 记录为准。

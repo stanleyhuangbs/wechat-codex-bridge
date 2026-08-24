@@ -32,7 +32,7 @@ jobs:
           subprocess.run([str(scripts/('python.exe' if sys.platform=='win32' else 'python')),'-m','pip','install','--no-deps',str(wheel)],check=True);
           subprocess.run([str(scripts/('wechat-codex-bridge.exe' if sys.platform=='win32' else 'wechat-codex-bridge')),'--help'],check=True);
           subprocess.run([str(scripts/('wechat-codex-bridge-admin.exe' if sys.platform=='win32' else 'wechat-codex-bridge-admin')),'--help'],check=True)"
-      - run: python tools/check_public_package.py --root . --wheel dist/wechat_codex_bridge-0.1.1-py3-none-any.whl
+      - run: python tools/check_public_package.py --root . --wheel dist/wechat_codex_bridge-0.1.2-py3-none-any.whl
       - name: Parse Windows installers
         if: runner.os == 'Windows'
         shell: pwsh

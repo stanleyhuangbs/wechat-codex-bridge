@@ -16,9 +16,14 @@ class _FakeReply:
 class _FakeRunner:
     def __init__(self):
         self.calls = []
+        self.started = threading.Event()
+        self.release = None
 
     def run(self, scope, messages, *, images=()):
         self.calls.append((scope, messages, list(images)))
+        self.started.set()
+        if self.release is not None:
+            self.release.wait(3)
         return _FakeReply()
 
 
@@ -126,6 +131,54 @@ class CodexHttpTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(body), {"text": "语音内容"})
         self.assertEqual(self.transcriber.calls, [(audio, "voice.wav", "zh")])
+
+    def test_same_scope_requests_wait_instead_of_returning_busy(self):
+        self.runner.release = threading.Event()
+        first = {}
+        second = {}
+
+        first_worker = threading.Thread(
+            target=lambda: first.setdefault(
+                "result",
+                self._request(
+                    "/v1/chat/completions", method="POST", payload=self._chat_payload()
+                ),
+            )
+        )
+        first_worker.start()
+        self.assertTrue(self.runner.started.wait(2))
+
+        second_worker = threading.Thread(
+            target=lambda: second.setdefault(
+                "result",
+                self._request(
+                    "/v1/chat/completions", method="POST", payload=self._chat_payload()
+                ),
+            )
+        )
+        second_worker.start()
+        second_worker.join(0.2)
+        self.assertTrue(second_worker.is_alive(), "second request should queue")
+
+        self.runner.release.set()
+        first_worker.join(3)
+        second_worker.join(3)
+
+        self.assertEqual(first["result"][0], 200)
+        self.assertEqual(second["result"][0], 200)
+        self.assertEqual(len(self.runner.calls), 2)
+
+    def test_queue_timeout_is_capped_at_120_seconds(self):
+        from wechat_codex_bridge.http import create_server
+
+        server = create_server(
+            "127.0.0.1", 0, token=self.token, runner=self.runner,
+            queue_timeout=999, local_addresses={"127.0.0.1"},
+        )
+        try:
+            self.assertEqual(server.queue_timeout, 120.0)
+        finally:
+            server.server_close()
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@
 
 - 不读取、复制或打包 Codex 的认证文件，只让 Codex CLI 在当前用户环境中自行使用已有登录。
 - Codex 运行在 read-only sandbox，禁用 Shell、浏览器、插件和外部操作工具。
+- 同一微信持续会话按顺序处理，不再因上一轮仍在运行而立即返回 `scope_busy`；排队硬上限为 120 秒。
 - macOS/Windows 只绑定 loopback；Linux 只绑定已验证的目标 Docker 私网 gateway，拒绝 `0.0.0.0`。
 - token、会话目录和备份仅当前用户可读；安装、升级、卸载不删除状态与旧 release。
 
